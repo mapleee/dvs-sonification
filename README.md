@@ -3,9 +3,10 @@ Use the events to do sonification
 
 ## Quick Start 
 ### Prepare environment
-1. Download a sf2 sound font, put it into data/sf2
+1. Download a sf2 sound font, put it into data/sf2. Give an example: 
 http://schristiancollins.com/soundfonts/GeneralUser_GS_1.442-MuseScore.zip
-2. download requirements
+
+2. Download requirements
 
 ```bash
 pip install -r requirements.txt 
