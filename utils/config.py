@@ -1,8 +1,13 @@
 # 事件相机参数
 HEIGHT = 264
 WIDTH = 320
-PACKET_NUM = 5  # 一帧图像所包含timestamp的个数
-FPS = 40  # 帧率
+
+# 使用PACKET_TIME做为每帧图像积分的时间段
+# 每个PACKET默认为5000us
+PACKET_NUM = 5
+PACKET_TIME = PACKET_NUM * 5000
+ACCUMULATE_NUM = 5  # 一个事件最大叠加亮度的次数
+FPS = 1000000/PACKET_TIME  # 导出视频的帧率
 
 # 音乐参数
 OCTAVE_NUM = 2  # 用几个八度的音，默认为2 (目前仅支持2)

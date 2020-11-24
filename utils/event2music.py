@@ -2,7 +2,6 @@ import cv2
 import os
 import numpy as np
 import pretty_midi
-import scipy.io.wavfile
 import subprocess
 from midi2audio import FluidSynth
 from collections import Counter
@@ -18,53 +17,20 @@ def write_event_pic(time, events, pic_fn):
     cv2.imwrite(pic_fn, img)
 
 
-def write_event_video(events, timestamps, video_fn, audio_fn, video_sound_fn):
+def write_event_video(coo_accu_list, video_path):
     fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
-    out = cv2.VideoWriter(video_fn, fourcc, FPS, (WIDTH, HEIGHT))
-    events_coo_total = []
-    for i, time in enumerate(timestamps):
+    out = cv2.VideoWriter(video_path, fourcc, FPS, (WIDTH, HEIGHT))
+    for coo_accu in coo_accu_list:
         img = np.zeros((HEIGHT, WIDTH), np.uint8)
-        events_coo = get_event_coordinate(time, events)
-        events_coo_total.append(events_coo)
-        if (i + 1) % PACKET_NUM != 0:
-            continue
-        else:
-            events_coo_total = np.concatenate(events_coo_total)
-            for j, coo in enumerate(events_coo_total):
+        for coo in coo_accu:
+            if int(coo[2]) >= ACCUMULATE_NUM:
                 img[int(coo[1]), int(coo[0])] = 255
-            img_3c = cv2.merge([img, img, img])
-            out.write(img_3c)
-            events_coo_total = []
+            else:
+                img[int(coo[1]), int(coo[0])] = int(255 // ACCUMULATE_NUM * coo[2])
+        img_3c = cv2.merge([img, img, img])
+        out.write(img_3c)
     out.release()
-    os.system(f'ffmpeg -i {video_fn} -i {audio_fn} -c copy {video_sound_fn}')
-
-
-def get_pitch_list(octave_num, scale_type, root_pitch):
-    '''
-    根据不同的参数，获取图像在纵轴上的音高列表
-    :param octave_num:
-    :param scale_type:
-    :param root_pitch:
-    :return:
-    '''
-
-    if scale_type == 'Full':  # 黑白键全用
-        pitch_list_base = np.arange(0, 12)
-    elif scale_type == 'Pentatonic':  # 五声音阶
-        pitch_list_base = np.array([0, 2, 4, 7, 9])
-    elif scale_type == 'Major':  # 大调
-        pitch_list_base = np.array([0, 2, 4, 5, 7, 9, 11])
-    elif scale_type == 'Minor':  # 小调
-        pitch_list_base = np.array([0, 2, 3, 5, 7, 8, 10])
-    else:
-        pitch_list_base = None
-
-    pitch_list = pitch_list_base.copy()
-    for i in range(1, octave_num):
-        pitch_list = np.append(pitch_list, pitch_list_base+i*12)
-    pitch_list += root_pitch
-
-    return pitch_list
+    # os.system(f'ffmpeg -i {video_fn} -i {audio_fn} -c copy {video_sound_fn}')
 
 
 def get_event_coordinate(time, events):
@@ -78,6 +44,32 @@ def get_event_coordinate(time, events):
     idx = np.where(events[:, 0] == time)
     event_coo = events[idx, 1:3].reshape(-1, 2)
     return event_coo
+
+
+def process_events(event_txt):
+    # 获取每帧图像中事件的坐标
+    events = np.genfromtxt(event_txt)
+    events[:, 0] = (events[:, 0] - events[0, 0]) // PACKET_TIME
+    events_coo_list = []
+    coo_accu_list = []
+
+    for i in range(int(events[-1, 0]) + 1):
+        idx = np.where(events[:, 0] == i)
+        events_coo = events[idx, 1:3].reshape(-1, 2)
+        events_coo = numpy_multi_sort(events_coo)
+        events_coo_list.append(events_coo)
+
+        # # 对每帧图像的事件进行积分，不论极性，坐标只要出现一次，亮度增加一个常数（255//ACCUMULATE_NUM）
+        coo_accu = np.array([[events_coo[0,0], events_coo[0,1], 1]])
+        for j, coo in enumerate(events_coo, 1):
+            if (coo[0] == coo_accu[-1, 0]) and (coo[1] == coo_accu[-1, 1]):
+                coo_accu[-1, 2] += 1
+            else:
+                coo = np.append(coo, 1).reshape(1, 3)
+                coo_accu = np.concatenate((coo_accu, coo))
+        coo_accu_list.append(coo_accu)
+
+    return events_coo_list, coo_accu_list
 
 
 def pitch_played_for_frame(event_coo, iii):
@@ -181,8 +173,13 @@ def midi2audio(sf2_path, midi_path, audio_path):
     sf2.midi_to_audio(midi_path, audio_path)
 
 
-def eventmidi2audio():
-    pass
+def numpy_multi_sort(array):
+    value = [tuple(a) for a in array]
+    dtyp = [('x', int), ('y', int)]
+    array = np.array(value, dtype=dtyp)
+    sorted_arr = np.sort(array, order=['x', 'y'])
+    sorted_arr = np.array([list(a) for a in sorted_arr])
+    return sorted_arr
 
 
 if __name__ == '__main__':
