@@ -56,7 +56,75 @@ def process_events(event_txt):
     return events_coo_list, coo_accu_list
 
 
-def pitch_played_for_frame(start_time, events_coo):
+def get_event_velocity(events_coo_list):
+    '''
+    得到每个PACKET事件的速度，计算方法就是用位移除以时间，目前只支持单一物体
+    :param events_coo_list:
+    :return:
+    '''
+    events_velocity = []
+    for i, events_coo in enumerate(events_coo_list):
+        if i == 0:
+            events_velocity.append(0)
+        else:
+            if (events_coo_list[i].shape[0] < TOTAL_EVENT_THRESHOLD) or \
+                    (events_coo_list[i-1].shape[0] < TOTAL_EVENT_THRESHOLD):
+                events_velocity.append(0)
+            else:
+                x1, y1 = np.mean(events_coo_list[i-1][:, 0]), np.mean(events_coo_list[i-1][:, 1])
+                x2, y2 = np.mean(events_coo_list[i][:, 0]), np.mean(events_coo_list[i][:, 1])
+                vel = np.sqrt(np.square(x2-x1)+np.square(y2-y1)) / (PACKET_SIZE/1000)  # 单位：像素/毫秒
+                events_velocity.append(vel)
+    return events_velocity
+
+
+def get_note_place(events_velocity):
+    '''
+    得到所有note应当出现的位置，也就是开始时间，用于控制音符密度
+    使用最小的时间间隔是速度120，4/4拍的16分音符，其时值为125ms，因为一帧图像是25ms，也就是每5帧图像检查一次
+    VELOCITY_THRESHOLD = [0.5, 1, 2]  # 速度分为4个档，分别对应用半音符，四分音符，八分音符和十六分音符的时间长度来演奏，注意：4个档是写死的
+
+    :param events_velocity:
+    :return:
+    '''
+    note_place = []
+    for i, vel in enumerate(events_velocity):
+        if i == 0:
+            continue
+        if i % NOTE_PER_FRAME == 0:
+            # 对连续NOTE_PER_FRAME帧图像取平均值
+            vel_now = np.mean(events_velocity[i-NOTE_PER_FRAME:i])
+            # 得到该速度在VELOCITY_THRESHOLD的索引
+            vel_index = np.where(np.sort(np.append(VELOCITY_THRESHOLD, vel_now))==vel_now)[0][0]
+            if vel_index == 3:
+                note_place.append(1)
+            elif vel_index == 2:
+                if len(note_place) == 0:
+                    note_place.append(1)
+                elif note_place[-1] == 1:
+                    note_place.append(0)
+                else:
+                    note_place.append(1)
+            elif vel_index == 1:
+                if len(note_place) == 0:
+                    note_place.append(1)
+                elif len(note_place) < 3:
+                    if 1 not in note_place:
+                        note_place.append(1)
+                    else:
+                        note_place.append(0)
+                else:
+                    if 1 not in note_place[-3:]:
+                        note_place.append(1)
+                    else:
+                        note_place.append(0)
+            else:
+                note_place.append(0)
+
+    return note_place
+
+
+def note_played_for_frame(start_time, events_coo):
     '''
     对于一帧图像，其中事件个数在指定高度范围内的数量大于设定阈值，则该区域存在音符
     :param start_time:
@@ -100,17 +168,21 @@ def pitch_played_for_frame(start_time, events_coo):
     return notes_list, cc
 
 
-def pitch2midi(events_coo_list, midi_path):
+def pitch2midi(events_coo_list, note_place, midi_path):
     midi_data = pretty_midi.PrettyMIDI()
     piano_all = pretty_midi.Instrument(program=0)
     # piano_concat = pretty_midi.Instrument(program=0)
 
     for i, events_coo in enumerate(events_coo_list):
-        notes_list, cc = pitch_played_for_frame(i*PACKET_TIME, events_coo)
-        if (notes_list is None) and (cc is None):
+        if i == 0:
             continue
-        piano_all.notes.extend(notes_list)
-        piano_all.control_changes.append(cc)
+        if i % NOTE_PER_FRAME == 0:
+            if note_place[i // NOTE_PER_FRAME - 1] == 1:
+                notes_list, cc = note_played_for_frame(i*PACKET_TIME, events_coo)
+                if (notes_list is None) and (cc is None):
+                    continue
+                piano_all.notes.extend(notes_list)
+                piano_all.control_changes.append(cc)
 
     # midi_data.instruments.append(piano_concat)
     midi_data.instruments.append(piano_all)

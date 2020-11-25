@@ -21,10 +21,12 @@ if __name__ == '__main__':
     for event_txt in tqdm.tqdm(event_txts):
         event_type = os.path.splitext(os.path.basename(event_txt))[0]
         events_coo_list, coo_accu_list = event2music.process_events(event_txt)
+        events_velocity = event2music.get_event_velocity(events_coo_list)
+        note_place = event2music.get_note_place(events_velocity)
 
         # 写midi
         midi_path = f'{music_dir}/{event_type}.mid'
-        event2music.pitch2midi(events_coo_list, midi_path)
+        event2music.pitch2midi(events_coo_list, note_place, midi_path)
 
         # 写audio
         audio_path = f'{music_dir}/{event_type}.wav'
