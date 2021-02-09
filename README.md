@@ -19,5 +19,6 @@ pip install -r requirements.txt
 Use the events provided in data/event. Then just type
 
 ```bash
+export PYTHONPATH=.
 python main.py
 ```
