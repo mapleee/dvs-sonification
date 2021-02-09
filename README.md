@@ -22,3 +22,5 @@ Use the events provided in data/event. Then just type
 export PYTHONPATH=.
 python main.py
 ```
+
+Then, you can find the generated video in data/output/insight/label_exp
