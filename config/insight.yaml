@@ -1,0 +1,151 @@
+###### basic #######
+
+height: 264
+width: 320
+event_path: 'data/event/insight/event_exp_2/exp_2_5.txt'
+event_dir: 'data/event/insight/event_exp'
+music_dir: 'data/output/insight/music_exp'
+video_dir: 'data/output/insight/video_exp'
+label_dir: 'data/output/insight/label_exp'
+sf2_path: 'data/sf2/GeneralUser GS 1.442 MuseScore/GeneralUser GS MuseScore v1.442.sf2'
+
+image_dir: 'data/output/insight/image_exp'
+cmap_dir: 'data/output/insight/cmap_exp'
+
+# iwe_dir: 'data/output/IROS_Dataset/iwe'
+# kmeans_dir: 'data/output/IROS_Dataset/kmeans'
+# prob_map_dir: 'data/output/IROS_Dataset/prob_map'
+
+exp1:
+  start_time: 50         # 有效的视频起止帧序号
+  end_time: 105
+  init_n_components: 1   # 初始化gmm的n_components
+exp2:
+  start_time: 100
+  end_time: 300
+  init_n_components: 1
+exp3:
+  start_time: 70
+  end_time: 500
+  init_n_components: 1
+exp4:
+  start_time: 50
+  end_time: 500
+  init_n_components: 1
+exp5:
+  start_time: 50
+  end_time: 200
+  init_n_components: 1
+exp6:
+  start_time: 50
+  end_time: 200
+  init_n_components: 1
+exp7:
+  start_time: 70
+  end_time: 200
+  init_n_components: 1
+exp8:
+  start_time: 70
+  end_time: 200
+  init_n_components: 1
+exp9:
+  start_time: 60
+  end_time: 200
+  init_n_components: 2
+exp12:
+  start_time: 81
+  end_time: 220
+  init_n_components: 2
+exp13:
+  start_time: 50
+  end_time: 120
+  init_n_components: 2
+exp14:
+  start_time: 60
+  end_time: 210
+  init_n_components: 2
+exp15:
+  start_time: 41
+  end_time: 100
+  init_n_components: 2
+
+exp_2_2:
+  start_time: 0
+  end_time: 120
+  init_n_components: 2
+exp_2_3:
+  start_time: 47
+  end_time: 120
+  init_n_components: 2
+exp_2_4:
+  start_time: 50
+  end_time: 150
+  init_n_components: 3
+exp_2_5:
+  start_time: 60
+  end_time: 158
+  init_n_components: 2
+
+
+
+###### event #######
+
+time_transfer: 1  # 主要用于适应不同数据集中timestamp的单位，当单位为us时，该值为1，当单位为s时，该值为1e6
+packet_time: 25000  # 每个packet时长，单位us
+sliding_time: 1  # 滑动窗口的步长，表示下一个packet和上一个packet之间相差'sliding_step' * packet_time
+medfilt: True  # 是否使用中值滤波
+accu_num: 5  # 一个事件最大叠加亮度的次数
+
+
+###### music #######
+
+frame_interval: 3         # 每隔多少帧数会计算一个note
+vel_thres: [0.5, 1, 2]   # 速度分为4个档，分别对应用半音符，四分音符，八分音符和十六分音符的时间长度来演奏
+note_per_frame: 5        # 每几帧图像判断是否有一个note
+oct_num: 2               # 用几个八度的音，默认为2 (目前仅支持2)
+scale_type: 'Major'      # 音阶的类，默认为大调 （目前仅支持大调）
+root_pitch: 48           # 每个音阶的起始音符，默认为C3
+part_event_thres: 20     # 一个高度范围内能够触发音符所需的事件数
+#total_event_thres: 60 * packet_num  # 一张图内总噪声事件数，低于该值证明该帧图像全为噪声
+pitch_major: [
+[0],
+[0],
+[0],
+[0],
+[0, 4],
+[0, 4],
+[0, 4],
+[0, 4, 7],
+[0, 4, 7],
+[0, 4, 7],
+[0, 4, 7],
+[0, 4, 7, 11],
+[0, 4, 7, 12],
+[0, 4, 7, 12],
+[0, 4, 7, 12],
+[0, 4, 7, 12],
+[0, 4, 7, 12, 16],
+[0, 4, 7, 12, 16],
+[0, 4, 7, 12, 16],
+[0, 4, 7, 12, 16, 19],
+[0, 4, 7, 12, 16, 19],
+[0, 4, 7, 12, 16, 19],
+[0, 4, 7, 12, 16, 19],
+[0, 4, 7, 12, 16, 19, 23],
+]
+
+###### system ######
+mode: 'video'
+
+
+###### cluster #####
+c_packet_time: 25000  # 单位us
+c_sliding_time: 1  # 滑动窗口的步长，表示下一个packet和上一个packet之间相差'c_sliding_step' * c_packet_time
+c_packet_event_num: 500
+c_num: 2
+c_max_delta_t: 5000  # set the maximum delta_t considered in K-means clustering in function "kmeans_cluster_optical_flow"
+c_max_px_per_unit: 0.0015  # Off-pixel: set velocity threshold for initialization, cluster with larger velocity will be deemed as zero
+c_dof: 2
+c_iter_num: 10
+c_step_mu: 0.00001   # set gradient ascent rate 0.00001 fine but slow
+c_dist_thres: 1.0    # set dist threshold for delta function approximation, must be integer

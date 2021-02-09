@@ -3,3 +3,4 @@ pretty_midi
 opencv-python
 midi2audio
 tqdm
+sklearn
