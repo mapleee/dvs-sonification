@@ -10,7 +10,10 @@ color_map = [[255, 253, 18],   # 镉黄色
              [106, 90, 205],   # 石板蓝
              [64, 224, 208],   # 青绿色
              [128, 128, 105],  # 暖灰色
-             [255, 97, 3]]     # 镉橙色
+             [255, 97, 3],     # 镉橙色
+             [255, 215, 0],    # Gold
+             [106, 90, 205],   # SlateBlue
+             [255, 106, 106]]  # IndianRed1
 
 
 def make_ellipses(gmm, ax):
@@ -58,7 +61,7 @@ def plot_gmm(evt_xy_arr, label, output_path, gmm=None, means=None):
         for i in range(len(means)):
             plt.scatter(means[i, 0], means[i, 1], marker='x', c=colors[i])
     # 保存
-    # plt.show()
+    plt.show()
     plt.savefig(f'{output_path}.png')
     plt.close('all')
 

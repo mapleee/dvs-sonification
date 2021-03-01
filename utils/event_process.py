@@ -22,6 +22,10 @@ def get_packet_events(event_txt, mode='TimeFixed'):
         events = np.genfromtxt(event_txt)[:, :3]   # dim:(events_num, 3), 3dim: [timestamp, x, y]
         events[:, 0] = configs['time_transfer'] * (events[:, 0] - events[0, 0])  # transfer timestamp unit to 'us'
 
+    elif configs_name == 'rpg':
+        events = np.genfromtxt(event_txt)[:, :3]
+        events[:, 0] = configs['time_transfer'] * (events[:, 0] - events[0, 0])
+
     elif configs_name == 'matlab':
         events = np.loadtxt(event_txt, delimiter=',')
         events[:, [0, 1, 2]] = events[:, [2, 1, 0]]
@@ -276,8 +280,8 @@ def gmm_cluster(evt_path):
                                 label, used_label = repair_small_obj_lost(1)
                             elif current_n_components == n_components_list[-3]:
                                 label, used_label = repair_small_obj_lost(2)
-                            elif current_n_components == n_components_list[-4]:
-                                label, used_label = repair_small_obj_lost(3)
+                            # elif current_n_components == n_components_list[-4]:
+                            #     label, used_label = repair_small_obj_lost(3)
 
                             else:
                                 dist_min = []
@@ -323,7 +327,7 @@ def gmm_cluster(evt_path):
                 label_list.append(label_with_evt)
                 label_means_list.append(label_means)
 
-                # visualization.plot_gmm(evt_xy, used_label, f'{configs["cmap_dir"]}/{evt_fn}_{i}', means=gmm.means_)
+                # visualization.plot_gmm(evt_xy, used_label, f'{configs["cmap_dir"]}/{evt_fn}_{i}')
 
             else:
                 used_label_list.append(None)

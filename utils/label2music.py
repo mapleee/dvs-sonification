@@ -5,7 +5,8 @@ from midi2audio import FluidSynth
 from config.load_yaml import configs
 
 # 从轻快到沉重
-instruments = ['Music Box', 'Cello', 'Acoustic Grand Piano']
+instruments = ['Music Box', 'Cello', 'Acoustic Grand Piano', 'Pan Flute', 'Viola',
+               'Electric Piano 1', 'Church Organ', 'Acoustic Guitar (nylon)', '	Fretless Bass']
 # instruments = ['Pan Flute', 'Cello', 'Contrabass', 'Viola']
 
 

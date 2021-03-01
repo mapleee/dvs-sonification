@@ -3,14 +3,14 @@
 height: 264
 width: 320
 event_path: 'data/event/insight/event_exp_2/exp_2_5.txt'
-event_dir: 'data/event/insight/event_exp'
-music_dir: 'data/output/insight/music_exp'
-video_dir: 'data/output/insight/video_exp'
-label_dir: 'data/output/insight/label_exp'
+event_dir: 'data/event/insight'
+music_dir: 'data/output/insight/music'
+video_dir: 'data/output/insight/video'
+label_dir: 'data/output/insight/label'
 sf2_path: 'data/sf2/GeneralUser GS 1.442 MuseScore/GeneralUser GS MuseScore v1.442.sf2'
 
-image_dir: 'data/output/insight/image_exp'
-cmap_dir: 'data/output/insight/cmap_exp'
+image_dir: 'data/output/insight/image'
+cmap_dir: 'data/output/insight/cmap'
 
 # iwe_dir: 'data/output/IROS_Dataset/iwe'
 # kmeans_dir: 'data/output/IROS_Dataset/kmeans'
